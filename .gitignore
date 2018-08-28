@@ -1,0 +1,6 @@
+*.pyc
+*.swp
+*.jpg
+*.txt
+tmp/
+.vscode/
