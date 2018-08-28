@@ -1,3 +1,4 @@
+# _*_ coding:utf-8 _*_
 import Image
 import math
 import operator
@@ -210,7 +211,6 @@ class JpegEncoder(object):
                                     self.jpeg_obj.qtable_number[comp])
                             coeff.extend(dct_array3[:64])
         return coeff
-
     
     def write_compressed_data(self):
         tmp = 0
@@ -226,9 +226,37 @@ class JpegEncoder(object):
         logger.info('%d x %d' % (self.image_width, self.image_height))
 
         
-        coeff = self._get_coeff()                                           
+        coeff = self._get_coeff()                                           #量化后的系数,是整数吗？                             
         coeff_count = len(coeff)
 
+
+        #统计H(0)、H(1)\H(-1)\H(2)\H(-2):原始统计数据
+        coef_origin=coeff[:]
+        index=[i for i in range(0,len(coef_origin)) if i%64==0]
+        coef_origin[index]=100                 #跳过AC系数
+        num_zero_origin=coef_origin.count(0)
+        num_one_origin=coef_origin.count(1)
+        num_none_origin=coef_origin.count(-1)
+        num_two_origin=coef_origin.count(2)
+        num_ntwo_origin=coef_origin.count(-2)
+
+        _large = coeff_count - num_zero_origin - num_one_origin-num_none_origin - coeff_count / 64  #有效系数的个数    
+	    _expected = _large + int(0.49 * _one)                               #预期容量,shrinkage效应无法确定
+        for k in range(1,8):
+            n=(1<<k)-1
+            changed = _large - _large % (n + 1)
+            changed = (changed + _one + _one / 2 - _one / (n + 1)) / (n + 1)
+            usable = (_expected * k / n - _expected * k / n % n) / 8
+            if usable == 0:
+                break
+        logger.info('\nk:%d' % k)
+
+        r=0.5*bits_secret/k                 #每个像素被修改的概率        
+        #AIS处理
+        #计算概率a,b,r:修改0、1、
+
+
+        #嵌入——>再统计嵌入后的数据,决定是否继续做AIS处理
         logger.info('got %d DCT AC/DC coefficients' % coeff_count)
         _changed, _embedded, _examined, _expected, _one, _large, _thrown, _zero = 0, 0, 0, 0, 0, 0, 0, 0
         shuffled_index = 0
@@ -240,8 +268,8 @@ class JpegEncoder(object):
             elif cc == 0:
                 _zero += 1
 
-        _large = coeff_count - _zero - _one - coeff_count / 64
-        _expected = _large + int(0.49 * _one)
+        _large = coeff_count - _zero - _one - coeff_count / 64              #有效系数的个数    
+        _expected = _large + int(0.49 * _one)                               #预期容量,shrinkage效应无法确定
 
         logger.info('one=%d' % _one)
         logger.info('large=%d' % _large)
@@ -249,7 +277,7 @@ class JpegEncoder(object):
         logger.info('expected capacity: %d bits' % _expected)
         logger.info('expected capacity with')
         for i in range(1, 8):
-            n = (1 << i) - 1
+            n = (1 << i) - 1                                               #n=2^i-1             
             changed = _large - _large % (n + 1)
             changed = (changed + _one + _one / 2 - _one / (n + 1)) / (n + 1)
 
@@ -259,6 +287,7 @@ class JpegEncoder(object):
 
             logger.info('%s code: %d bytes (efficiency: %d.%d bits per change)' % ('default' if i == 1 else '(1, %d, %d)' % (n, i), usable, usable * 8 / changed, usable * 80 / changed % 10))
 
+        #shuffles all coefficients using a permutation,使用排列对系数进行混洗 
         if self.embedded_data is not None:
             logger.info('permutation starts')
             random = F5Random(self.password)

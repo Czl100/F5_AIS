@@ -1,4 +1,5 @@
-#_*_ coding: utf-8 _*_
+# _*_ coding:utf-8 _*_
+
 import unittest
 import sys
 import os
@@ -10,6 +11,7 @@ from PIL import Image
 import jpype
 import optparse
 
+print '------start------'
 tests_dir = os.path.dirname(__file__)
 sys.path.insert(0, os.path.join(tests_dir, '..'))
 
@@ -31,11 +33,11 @@ class HuffmanTest(F5TestCase):
             print(str(py),str(ja))
                         
         check('check1', 'jaac')                     #2
-        check('check2', 'jaac')                     #3
+        check('check2', 'jaac')                     #汉族
 
 class JpegEncoderTest(F5TestCase):
     def _test_compress(self, embed_data):
-        print(embed_data)
+        print embed_data
 
     def test_compress_no_embedded_data(self):
         self._test_compress(None)
@@ -49,6 +51,19 @@ class JpegEncoderTest(F5TestCase):
     def test_compress_with_chinese_embedded_data(self):
         self._test_compress('我的测试用例')
 
-if __name__ == '__main__':
-    unittest.main()
+'''
+for i in range(1, 8):    
+    n = (1 << i) - 1                #注释
+    print n
+print '---------end-----------'
 
+ if __name__ == '__main__':
+     unittest.main()
+'''
+coef=[i*0.1 for i in range(0,10)]
+
+coef_2=coef[:]
+coef_2[0]=1000
+print coef
+print '-----------'
+print coef_2
