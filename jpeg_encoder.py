@@ -14,6 +14,7 @@ from util import FilteredCollection
 
 from huffman import Huffman
 from DCT import DCT
+from ais import Ais
 
 logger = logging.getLogger('jpeg_encoder')
 
@@ -214,7 +215,6 @@ class JpegEncoder(object):
     
     def write_compressed_data(self):
         tmp = 0
-
         last_dc_value = create_array(0, self.jpeg_obj.comp_num)
         zero_array = create_array(0, 64)
         width, height = 0, 0
@@ -224,13 +224,14 @@ class JpegEncoder(object):
 
         logger.info('DCT/quantisation starts')
         logger.info('%d x %d' % (self.image_width, self.image_height))
-
         
         coeff = self._get_coeff()                                           #量化后的系数,是整数吗？                             
         coeff_count = len(coeff)
 
+        #AIS处理
+        size_secret=self.embedded_data.len
+        ais=Ais(coeff,size_secret)
 
-        
         #嵌入——>再统计嵌入后的数据,决定是否继续做AIS处理
         logger.info('got %d DCT AC/DC coefficients' % coeff_count)
         _changed, _embedded, _examined, _expected, _one, _large, _thrown, _zero = 0, 0, 0, 0, 0, 0, 0, 0
@@ -248,9 +249,9 @@ class JpegEncoder(object):
 
         logger.info('one=%d' % _one)
         logger.info('large=%d' % _large)
-
         logger.info('expected capacity: %d bits' % _expected)
         logger.info('expected capacity with')
+
         for i in range(1, 8):
             n = (1 << i) - 1                                               #n=2^i-1             
             changed = _large - _large % (n + 1)
