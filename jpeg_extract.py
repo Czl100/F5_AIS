@@ -1,3 +1,4 @@
+#emcoding:utf-8
 from huffman_decode import HuffmanDecode
 from util import PythonF5Random as F5Random
 from util import BreakException

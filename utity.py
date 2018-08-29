@@ -1,3 +1,4 @@
+#_*_ coding:utf-8 _*_
 #!/usr/bin/env python
 import Image
 from jpeg_encoder import JpegEncoder
@@ -14,8 +15,8 @@ group = optparse.OptionGroup(parser, 'Jpeg f5 steganography encoder and decoder'
 group.add_option('-t', '--type',     type='string', default='e',
         help='e for encode or x for decode')
 group.add_option('-i', '--image',    type='string', default='origin.jpg' ,help='input image')
-group.add_option('-d', '--data',     type='string', default='secret.txt',help='data to be embeded, only for encode')
-group.add_option('-o', '--output',   type='string', default='steg2.jpg'   ,help='output image name, only for encode')
+group.add_option('-d', '--data',     type='string', default='secret.txt', help='data to be embeded, only for encode')
+group.add_option('-o', '--output',   type='string', default='steg2.jpg'  ,help='output image name, only for encode')
 group.add_option('-p', '--password', type='string', default='abc123',
         help='password')
 group.add_option('-c', '--comment',  type='string', default='written by fengji',
@@ -34,7 +35,13 @@ if __name__ == '__main__':
     if options.image and os.path.isfile(options.image):
         if options.type == 'e' and options.data:
             image = Image.open(options.image)                               #获取image
-            data = options.data
+            #data = options.data                                             #str类型
+            
+            if not options.data and os.path.isfile(options.data):
+                print 'open secret file fail!\n'
+                sys.exit(0)
+            with open(options.data,'r') as secretfile:
+                data=secretfile.read()
             if not data:
                 print 'there\'s no data to embed'
                 sys.exit(0)
@@ -44,10 +51,12 @@ if __name__ == '__main__':
                 options.output = 'output.jpg'
             elif os.path.exists(options.output) and os.path.isfile(options.output):
                 print 'the output file exists, do you really want to override it?'
+                '''
                 answer = raw_input('y/n: ')
                 if answer != 'y':
                     print 'exit'
                     sys.exit(0)
+                '''
             output = open(options.output, 'wb')
 
             encoder = JpegEncoder(image, 80, output, options.comment)       #image、output是文件对象
