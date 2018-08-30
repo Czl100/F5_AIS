@@ -91,7 +91,7 @@ class JpegInfo(object):
         return self.comment
 
 class JpegEncoder(object):
-    def __init__(self, image, quality, out, comment):
+    def __init__(self, image, quality, out, comment,ais):
         self.quality = quality
         self.jpeg_obj = JpegInfo(image, comment)
 
@@ -100,6 +100,8 @@ class JpegEncoder(object):
 
         self.dct = DCT(self.quality)
         self.huf = Huffman(*image.size)
+
+        self.hasais=ais
 
     def compress(self, embedded_data=None, password='abc123'):
         self.embedded_data = EmbedData(embedded_data) if embedded_data else None
@@ -213,8 +215,7 @@ class JpegEncoder(object):
                             coeff.extend(dct_array3[:64])
         return coeff
     
-    def write_compressed_data(self):
-        tmp = 0
+    def write_compressed_data(self):        
         last_dc_value = create_array(0, self.jpeg_obj.comp_num)
         zero_array = create_array(0, 64)
         width, height = 0, 0
@@ -224,13 +225,17 @@ class JpegEncoder(object):
 
         logger.info('DCT/quantisation starts')
         logger.info('%d x %d' % (self.image_width, self.image_height))
-        
-        coeff = self._get_coeff()                                           #量化后的系数,是整数吗？                             
+                
+        coeff = self._get_coeff()                                           #量化后的系数,是整数
+        #coeff=coeff[0:64*5]
         coeff_count = len(coeff)
 
         #AIS处理
-        size_secret=self.embedded_data.len
-        ais=Ais(coeff,size_secret)
+        if self.hasais:
+            size_secret=self.embedded_data.len
+            ais=Ais(coeff,size_secret)                                          #coeff被修改
+            ais.statistic()
+            ais.fix()                        
 
         #嵌入——>再统计嵌入后的数据,决定是否继续做AIS处理
         logger.info('got %d DCT AC/DC coefficients' % coeff_count)
@@ -256,7 +261,6 @@ class JpegEncoder(object):
             n = (1 << i) - 1                                               #n=2^i-1             
             changed = _large - _large % (n + 1)
             changed = (changed + _one + _one / 2 - _one / (n + 1)) / (n + 1)
-
             usable = (_expected * i / n - _expected * i / n % n) / 8
             if usable == 0:
                 break

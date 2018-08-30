@@ -12,15 +12,15 @@ import logging
 parser = optparse.OptionParser(usage="Usage: %prog [options] [args]")
 group = optparse.OptionGroup(parser, 'Jpeg f5 steganography encoder and decoder')
 
-group.add_option('-t', '--type',     type='string', default='e',
-        help='e for encode or x for decode')
+group.add_option('-t', '--type',     type='string', default='x',help='e for encode or x for decode')
 group.add_option('-i', '--image',    type='string', default='origin.jpg' ,help='input image')
 group.add_option('-d', '--data',     type='string', default='secret.txt', help='data to be embeded, only for encode')
-group.add_option('-o', '--output',   type='string', default='steg2.jpg'  ,help='output image name, only for encode')
+group.add_option('-o', '--output',   type='string', default='steg.jpg'  ,help='output image name, only for encode')
 group.add_option('-p', '--password', type='string', default='abc123',
         help='password')
 group.add_option('-c', '--comment',  type='string', default='written by fengji',
         help='comment to put in the image, only for encode')
+group.add_option('-a','--hasais',    type='string', default='n')
 
 parser.add_option_group(group)
 parser.add_option('-q', '--quiet', action='store_true')
@@ -59,15 +59,19 @@ if __name__ == '__main__':
                 '''
             output = open(options.output, 'wb')
 
-            encoder = JpegEncoder(image, 80, output, options.comment)       #image、output是文件对象
+            if options.hasais=='n':
+                encoder = JpegEncoder(image, 80, output, options.comment,False)       #image、output是文件对象
+            else:
+                encoder = JpegEncoder(image, 80, output, options.comment,True)       #image、output是文件对象
             encoder.compress(data, options.password)
             output.close()
-        if options.type == 'x':
+            print '\n----embed end--------'
+        if options.type == 'x':            
             if options.output:
                 output = open(options.output, 'wb')
             else:
-                output = StringIO.StringIO()
-            image = open(options.image, 'rb')                               #steg_image
+                output = StringIO.StringIO()            
+            image = open(options.image, 'rb')                               #steg_image                        
             JpegExtract(output, options.password).extract(image.read())
 
             if not options.output:
@@ -75,6 +79,7 @@ if __name__ == '__main__':
 
             image.close()
             output.close()
+            print '\n----extract end--------'
     else:
         print 'you didn\'t give a image or the image is not there'
         parser.print_help()

@@ -54,3 +54,8 @@ for i in range(count):
     first=False
 print indexlist
 '''
+
+index=[0,2,4]
+array=[0,11,22,33,44,55]
+for i in index:
+    print array[i]
