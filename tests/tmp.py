@@ -1,6 +1,7 @@
 # _*_ coding:utf-8 _*_
 import sympy
 import random
+import json
 '''
 for i in range(1, 8):    
     n = (1 << i) - 1                #注释
@@ -55,7 +56,12 @@ for i in range(count):
 print indexlist
 '''
 
-index=[0,2,4]
-array=[0,11,22,33,44,55]
-for i in index:
-    print array[i]
+infile='in.json'
+data=[i for i in range(9)]
+data2=[i for i in range(9)]
+i=0
+with open(infile,'w') as inf:
+    json.dump(data,inf,indent=1,sort_keys=True)
+    json.dump(data2,inf,indent=8)
+print 'end'
+

@@ -12,7 +12,7 @@ import logging
 parser = optparse.OptionParser(usage="Usage: %prog [options] [args]")
 group = optparse.OptionGroup(parser, 'Jpeg f5 steganography encoder and decoder')
 
-group.add_option('-t', '--type',     type='string', default='x',help='e for encode or x for decode')
+group.add_option('-t', '--type',     type='string', default='e',help='e for encode or x for decode')
 group.add_option('-i', '--image',    type='string', default='origin.jpg' ,help='input image')
 group.add_option('-d', '--data',     type='string', default='secret.txt', help='data to be embeded, only for encode')
 group.add_option('-o', '--output',   type='string', default='steg.jpg'  ,help='output image name, only for encode')
@@ -34,6 +34,7 @@ if __name__ == '__main__':
                 or options.verbose and logging.DEBUG or logging.INFO)
     if options.image and os.path.isfile(options.image):
         if options.type == 'e' and options.data:
+            print '----start embed------'
             image = Image.open(options.image)                               #获取image
             #data = options.data                                             #str类型
             
@@ -66,7 +67,8 @@ if __name__ == '__main__':
             encoder.compress(data, options.password)
             output.close()
             print '\n----embed end--------'
-        if options.type == 'x':            
+        if options.type == 'x':
+            print '----start extract------'  
             if options.output:
                 output = open(options.output, 'wb')
             else:

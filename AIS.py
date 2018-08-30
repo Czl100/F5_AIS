@@ -88,7 +88,7 @@ class Ais(object):
             for i in randindex:
                 self.coef[i]=2
         else:
-            for i in range(le):
+            for i in randindex:
                 self.coef[i]=-2
 
     def statistic(self):

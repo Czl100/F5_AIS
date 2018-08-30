@@ -4,6 +4,7 @@ from util import PythonF5Random as F5Random
 from util import BreakException
 from util import Permutation
 import logging
+import json
 
 logger = logging.getLogger('jpeg_decoder')
 
@@ -58,6 +59,9 @@ class JpegExtract(object):
         logger.info('huffman decoding starts')
         coeff = hd.decode()
 
+        with open('excoef.json','w') as f:
+            json.dump(coeff,f,indent=4)
+
         logger.info('permutation starts')
         self.f5random = F5Random(self.password)
         permutation = Permutation(len(coeff), self.f5random)
@@ -68,6 +72,8 @@ class JpegExtract(object):
         self.n_bytes_extracted = 0
         self.extracted_bit = 0
 
+        with open('excoef_2.json','w') as f:
+            json.dump(coeff,f,indent=4)
         logger.info('extraction starts')
 
         self.cal_embedded_length(permutation, coeff)
