@@ -2,6 +2,9 @@
 import sympy
 import random
 import json
+
+from matplotlib import pyplot as plt
+
 '''
 for i in range(1, 8):    
     n = (1 << i) - 1                #注释
@@ -56,12 +59,27 @@ for i in range(count):
 print indexlist
 '''
 
-infile='in.json'
-data=[i for i in range(9)]
-data2=[i for i in range(9)]
-i=0
-with open(infile,'w') as inf:
-    json.dump(data,inf,indent=1,sort_keys=True)
-    json.dump(data2,inf,indent=8)
-print 'end'
+import numpy as np
+import matplotlib.pyplot as plt
 
+x=[i for i in range(-10,11)]
+x_1=[i for i in range(-5,6)]
+for i in x_1:
+    x.append(i)
+
+print x
+
+
+# n, bins, patches = plt.hist(x, int(max(x)-min(x)),normed=1, facecolor='g', alpha=0.75)
+
+# plt.xlabel('Smarts')
+# plt.ylabel('Probability')
+# #添加标题
+# plt.title('Histogram of IQ')
+# #添加文字
+# plt.text(60, .025, r'$\mu=100,\ \sigma=15$')
+# plt.axis([min(x),max(x), 0, 1])
+# plt.grid(True)
+# plt.show()
+data=np.arange(-1,1,0.1)
+print data

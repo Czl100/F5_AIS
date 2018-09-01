@@ -58,9 +58,10 @@ class JpegExtract(object):
         hd = HuffmanDecode(data)
         logger.info('huffman decoding starts')
         coeff = hd.decode()
-
+        coef_buf=coeff[:]
+        
         with open('excoef.json','w') as f:
-            json.dump(coeff,f,indent=4)
+            json.dump(coeff,f)
 
         logger.info('permutation starts')
         self.f5random = F5Random(self.password)
@@ -71,17 +72,14 @@ class JpegExtract(object):
         self.available_extracted_bits = 0
         self.n_bytes_extracted = 0
         self.extracted_bit = 0
-
-        with open('excoef_2.json','w') as f:
-            json.dump(coeff,f,indent=4)
         logger.info('extraction starts')
 
         self.cal_embedded_length(permutation, coeff)
         k = (self.extracted_file_length >> 24) % 32
         n = (1 << k) - 1
         self.extracted_file_length &= 0x007fffff
-        logger.info('length of embedded file: %d bytes' % self.extracted_file_length)
-
+        logger.info('length of embedded file: %d bytes' % self.extracted_file_length)      
+        
         if n > 1:
             vhash = 0
             logger.info('(1, %d, %d) code used' % (n, k))

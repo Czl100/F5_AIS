@@ -233,16 +233,17 @@ class JpegEncoder(object):
         
         #导出未处理的QDCT
         filename='unprocess.json'
-        with open(filename,'w') as f:
-            json.dump(coeff,f,indent=4)
+        with open(filename,'w') as f_unprocess:
+            json.dump(coeff,f_unprocess)
         #AIS处理
         if self.hasais:
             size_secret=self.embedded_data.len
             ais=Ais(coeff,size_secret)                                          #coeff被修改
             ais.statistic()
             ais.fix()                        
-            with open('aised.json','w') as f:
-                json.dump(coeff,f,indent=4)
+            with open('aised.json','w') as f_aised:
+                json.dump(coeff,f_aised)
+                
         #嵌入——>再统计嵌入后的数据,决定是否继续做AIS处理
         logger.info('got %d DCT AC/DC coefficients' % coeff_count)
         _changed, _embedded, _examined, _expected, _one, _large, _thrown, _zero = 0, 0, 0, 0, 0, 0, 0, 0
@@ -400,8 +401,10 @@ class JpegEncoder(object):
 
         #导出嵌入后的系数coeff
         filename='embeded.json'
-        with open(filename,'w') as f:
-            json.dump(coeff,f,indent=4)
+        if self.hasais:
+            filename+='_aised'
+        with open(filename,'w') as f_embeded:
+            json.dump(coeff,f_embeded)
 
         logger.info('starting hufman encoding')
         shuffled_index = 0
