@@ -3,9 +3,10 @@ import random
 import sympy
 import logging
 from math import ceil
+
 class Ais(object):
     #对QDCT系数进行一次预处理
-    def __init__(self,QDCT,size_secret):        
+    def __init__(self,QDCT,size_secret):
         self.pa,self.pb,self.r,self.T=0.02,0.02,0,1.02                         #T>1        
         self.secret_byte=size_secret                                  #密码信息大小(byte)
         self.expected=0
@@ -104,7 +105,6 @@ class Ais(object):
         self.H0,self.H1,self.H2,self.H3=H0,H1,H2,H3
 
         self._cal_k_r()
-
 
     def _cal_k_r(self):
         for i in range(1, 8):

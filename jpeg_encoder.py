@@ -216,34 +216,36 @@ class JpegEncoder(object):
                             coeff.extend(dct_array3[:64])
         return coeff
     
-    def write_compressed_data(self):        
+    def write_compressed_data(self):
         last_dc_value = create_array(0, self.jpeg_obj.comp_num)
         zero_array = create_array(0, 64)
         width, height = 0, 0
-
         min_block_width = min(self.jpeg_obj.block_width)
         min_block_height = min(self.jpeg_obj.block_height)
 
         logger.info('DCT/quantisation starts')
         logger.info('%d x %d' % (self.image_width, self.image_height))
                 
-        coeff = self._get_coeff()                                           #量化后的系数,是整数
-        #coeff=coeff[0:64*5]
+        coeff = self._get_coeff()                                           #量化后的系数,是整数        
         coeff_count = len(coeff)
         
         #导出未处理的QDCT
-        filename='unprocess.json'
+        if self.hasais:
+            filename='unpro_ais.json'
+        else:
+            filename='unpro.json'
         with open(filename,'w') as f_unprocess:
             json.dump(coeff,f_unprocess)
+
         #AIS处理
         if self.hasais:
             size_secret=self.embedded_data.len
             ais=Ais(coeff,size_secret)                                          #coeff被修改
             ais.statistic()
             ais.fix()                        
-            with open('aised.json','w') as f_aised:
+            with open('aised.json','w') as f_aised:        
                 json.dump(coeff,f_aised)
-                
+
         #嵌入——>再统计嵌入后的数据,决定是否继续做AIS处理
         logger.info('got %d DCT AC/DC coefficients' % coeff_count)
         _changed, _embedded, _examined, _expected, _one, _large, _thrown, _zero = 0, 0, 0, 0, 0, 0, 0, 0
@@ -261,7 +263,7 @@ class JpegEncoder(object):
 
         logger.info('one=%d' % _one)
         logger.info('large=%d' % _large)
-        logger.info('expected capacity: %d bits' % _expected)
+        logger.info('\nexpected capacity: %d bits\n' % _expected)
         logger.info('expected capacity with')
 
         for i in range(1, 8):
@@ -399,11 +401,12 @@ class JpegEncoder(object):
             logger.info('%d coefficients thrown (zeroed)' % _thrown)
             logger.info('%d bits (%d bytes) embedded' % (_embedded, _embedded / 8))
 
-        #导出嵌入后的系数coeff
-        filename='embeded.json'
+        #导出嵌入后的系数coeff        
         if self.hasais:
-            filename+='_aised'
-        with open(filename,'w') as f_embeded:
+            filename2='embeded_ais.json'
+        else:
+            filename2='embeded.json'
+        with open(filename2,'w') as f_embeded:
             json.dump(coeff,f_embeded)
 
         logger.info('starting hufman encoding')
