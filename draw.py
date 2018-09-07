@@ -4,6 +4,8 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 from math import ceil
+import Image
+
 
 def pro_draw(array):
 	coef_set=set(array)
@@ -58,26 +60,72 @@ print('numble of 0 in embeded: %d' % count_embeded[index_embeded])
 '''
 
 #fig = plt.figure()
+plt.rcParams['font.sans-serif']=['SimHei']
+plt.rcParams['axes.unicode_minus'] = False
 width=0.2
 _w=width/2
-plt.bar([i-(width/2) for i in ori],count_ori,width,color="black",label='original')
-plt.bar([i+(width/2) for i in embeded],count_embeded,width,color="b",label='embeded')
-plt.bar([i-1.5*width for i in aised],count_ais,width,color="r",label='aised')
-plt.bar([i+1.5*width for i in embed_ais],count_embed_ais,width,color="g",label='embed_ais')
+plt.bar([i-(width/2) for i in ori],count_ori,width,color="black",label=u'载体图像')
+plt.bar([i+(width/2) for i in embeded],count_embeded,width,color="b",label=u'载密图像')
+plt.bar([i-1.5*width for i in aised],count_ais,width,color="r",label=u'处理后载体图像')
+plt.bar([i+1.5*width for i in embed_ais],count_embed_ais,width,color="g",label=u'处理后载密图像')
 
-plt.xticks(np.arange(-10,10,1))
-# plt.text(0,count_ori[index_ori],count_ori[index_ori],ha='left', va='bottom', fontsize=10)
-# plt.text(0,count_embeded[index_embeded],count_embeded[index_embeded],ha='left', va='bottom', fontsize=10)
-# plt.text(0,count_ais[index_aised],count_ais[index_aised],ha='left', va='bottom', fontsize=10)
-# plt.text(0,count_embed_ais[index_embed_ais],count_embed_ais[index_embed_ais],ha='left', va='bottom', fontsize=10)
+#plt.xticks(np.arange(-10,10,1))
+plt.text(0,count_ori[index_ori],count_ori[index_ori],ha='left', va='bottom', fontsize=10)
+plt.text(0,count_embeded[index_embeded],count_embeded[index_embeded],ha='left', va='bottom', fontsize=10)
+plt.text(0,count_ais[index_aised],count_ais[index_aised],ha='left', va='bottom', fontsize=10)
+plt.text(0,count_embed_ais[index_embed_ais],count_embed_ais[index_embed_ais],ha='left', va='bottom', fontsize=10)
 
-plt.title("mandril_color")
-plt.xlabel('Quantized DCT coefficient')
-plt.ylabel('Frequency')
+plt.title(u"总统计直方图")
+plt.xlabel(u'量化后DCT系数')
+plt.ylabel(u'频数')
+plt.xticks(np.linspace(-10,10,21))
 plt.axis([-5,5, 0,1.05*max(count_embeded)])
 plt.legend()
-plt.savefig("barChart.tif")
-plt.show()
+plt.savefig(u"总统计直方图.tif")
+
+
+
+width=0.4
+plt.figure()
+plt.bar([i-(width/2) for i in ori],count_ori,width,color="black",label=u'载体图像')
+plt.bar([i+(width/2) for i in embeded],count_embeded,width,color="b",label=u'载密图像')
+plt.text(0,count_ori[index_ori],count_ori[index_ori],ha='left', va='bottom', fontsize=10)
+plt.text(0,count_embeded[index_embeded],count_embeded[index_embeded],ha='left', va='bottom', fontsize=10)
+plt.title(u"未预处理载体\载密直方图")
+plt.xlabel(u'量化后DCT系数')
+plt.ylabel(u'频数')
+plt.xticks(np.linspace(-10,10,21))
+plt.axis([-5,5, 0,1.05*max(count_embeded)])
+plt.legend()
+plt.savefig(u"未处理嵌入前后.tif")
+
+plt.figure()
+plt.bar([i-(width/2) for i in ori],count_ori,width,color="black",label=u'载体图像')
+plt.bar([i+(width/2) for i in aised],count_ais,width,color="r",label=u'处理后载体图像')
+plt.text(0,count_ori[index_ori],count_ori[index_ori],ha='left', va='bottom', fontsize=10)
+plt.text(0,count_ais[index_aised],count_ais[index_aised],ha='left', va='bottom', fontsize=10)
+plt.title(u"预处理前后载体直方图")
+plt.xlabel(u'量化后DCT系数')
+plt.ylabel(u'频数')
+plt.xticks(np.linspace(-10,10,21))
+plt.axis([-5,5, 0,1.05*max(count_embeded)])
+plt.legend()
+plt.savefig(u"预处理前后载体直方图.tif")
+
+plt.figure()
+plt.bar([i+(width/2) for i in embeded],count_embeded,width,color="b",label=u'载密图像')
+plt.bar([i-(width/2) for i in embed_ais],count_embed_ais,width,color="g",label=u'处理后载密图像')
+plt.text(0,count_embeded[index_embeded],count_embeded[index_embeded],ha='left', va='bottom', fontsize=10)
+plt.text(0,count_embed_ais[index_embed_ais],count_embed_ais[index_embed_ais],ha='left', va='bottom', fontsize=10)
+plt.title(u"预处理前后载密直方图")
+plt.xlabel(u'量化后DCT系数')
+plt.ylabel(u'频数')
+plt.xticks(np.linspace(-10,10,21))
+plt.axis([-5,5, 0,1.05*max(count_embeded)])
+plt.legend()
+plt.savefig(u"预处理前后载密直方图.tif")
+#plt.show()
+
 #折线图
 '''
 	#plt.plot(ori,count_ori,'-k',ais,count_ais,'-r',embeded,count_embeded,'-g' ,ex,count_ex,'-b')

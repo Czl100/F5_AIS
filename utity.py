@@ -18,9 +18,9 @@ group.add_option('-d', '--data',     type='string', default='secret.txt', help='
 group.add_option('-o', '--output',   type='string', default='steg.jpg'  ,help='output image name, only for encode')
 group.add_option('-p', '--password', type='string', default='abc123',
         help='password')
-group.add_option('-c', '--comment',  type='string', default='written by fengji',
+group.add_option('-c', '--comment',  type='string', default='written by czl',
         help='comment to put in the image, only for encode')
-group.add_option('-a','--hasais',    type='string', default='n')
+group.add_option('-a','--hasais',    type='string', default='y')
 
 parser.add_option_group(group)
 parser.add_option('-q', '--quiet', action='store_true')

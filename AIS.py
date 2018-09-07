@@ -3,11 +3,13 @@ import random
 import sympy
 import logging
 from math import ceil
+import matplotlib.pyplot as plt
+import numpy as np
 
 class Ais(object):
     #对QDCT系数进行一次预处理
     def __init__(self,QDCT,size_secret):
-        self.pa,self.pb,self.r,self.T=0.08,0.04,0,1.02                         #T>1        
+        self.pa,self.pb,self.r,self.T=0.01,0.04,0,1.02                         #T>1        
         self.secret_byte=size_secret                                  #密码信息大小(byte)
         self.expected=0
         self.k_matrix=0
@@ -133,17 +135,52 @@ class Ais(object):
         #AIS处理、计算修改0、1、概率a,b,r    
         #expression:ax+by=c
         r=self.r
-        a1,b1,c1=0.5*(1-r)*H1,(2*r-2+r)*H1,r*H3-(2*r-1)*H2-(1-r)*H1             #H(1)'>H(2)'  > 
+        a1,b1,c1=0.5*(1-r)*H1,(2*r-2+r)*H1,r*H3-(2*r-1)*H2-(1-r)*H1            #H(1)'>H(2)'  > 
         a2,b2,c2=0.5*(3*r-1)*H0-H0,-((3*r-1)*H1+r*H1),r*H2-H0-H1*(3*r-1)        # >
-        a3,b3,c3=(r-1)*H0,-2*r*H1,self.T*H0-H0-2*r*H1                                #<
-        a4,b4,c4=1.5*H0,-H1,H0-H1           #<
-        a5,b5,c5=-0.5*H0,2*H1,H1-H2         #<
+        a3,b3,c3=(r-1)*H0,-2*r*H1,self.T*H0-H0-2*r*H1                          # <
+        a4,b4,c4=1.5*H0,-H1,H0-H1           #ax+by<c
+        a5,b5,c5=-0.5*H0,2*H1,H1-H2         #ax+by<c
+        print 'T_C:%d' % c3
 
+        
         #解一元二次方程
-        '''
-        x=sympy.Symbol('x')                 #x:pa  y:pb
-        y=sympy.Symbol('y')
-        expreArray=[x+y-1,3*x+2*y-5]
-        result=sympy.solve(expreArray,[x,y])
-        print(result)
-        '''
+        px=sympy.Symbol('px')                         #x:pa  y:pb
+        py=sympy.Symbol('py')
+        #expre1_5=[a1*x+b1*y-c1,a5*x+b5*y-c5]      #公式(1)与(5)
+        #dst1_5=sympy.solve(expre1_5,[x,y])
+        expre3_5=[a3*px+b3*py-c3,a5*px+b5*py-c5]      #公式(3)与(5)        
+        dst3_5=sympy.solve(expre3_5,[px,py])  
+
+        point_ry=float(dst3_5[py])
+        point_rx=(c4-b4*point_ry)/a4
+        point_rx=0.5*(point_rx+float(dst3_5[px]))
+        
+        self.pa,self.pb=point_rx,point_ry
+        print "\n(%.3f,%.3f)\n" % (point_rx,point_ry)
+
+        #画出满足约束条件的区域
+        x=[(i/10.0) for i in range(-5,15)]
+        y1=[(c1-a1*i)/b1 for i in x]
+        y2=[(c2-a2*i)/b2 for i in x]
+        y3=[(c3-a3*i)/b3 for i in x]
+        y4=[(c4-a4*i)/b4 for i in x]                #1.5aH(0)-bH(1)<H(0)-H(1)
+        y5=[(c5-a5*i)/b5 for i in x]                #2bH(1)-0.5aH(0)<H(1)-H(2)
+                
+        plt.rcParams['font.sans-serif']=['SimHei']
+        plt.rcParams['axes.unicode_minus'] = False
+        plt.plot(x,y1,'-mx',label="H(2)<H(1)")
+        # plt.plot(x,y2,'-yd',label="H(1)<H(0)")
+        plt.plot(x,y3,'-ko',label="H(0)<(1+T)h(0)")
+        plt.plot(x,y4,'-rs',label="h'(1)<h'(0)")
+        plt.plot(x,y5,'-b^',label="h'(2)<h'(1)")        
+
+        plt.plot(point_rx,point_ry,'-bo')
+        plt.text(dst3_5[px],dst3_5[py],'(%.3f,%.3f)' % (dst3_5[px],dst3_5[py]),ha='left', va='bottom', fontsize=10)
+        plt.text(point_rx,point_ry,'(%.3f,%.3f)' % (point_rx,point_ry),ha='left', va='bottom', fontsize=10)
+        plt.text(point_rx-0.1,point_ry-0.1,u'初始化抗体集',ha='left', va='bottom', fontsize=10)
+
+        plt.axis([0,1, 0,1])
+        plt.xlabel(u'α取值')
+        plt.ylabel(u'β取值')        
+        plt.legend()
+        plt.savefig(u"mandril_color图像约束区域.tif")
