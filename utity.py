@@ -15,7 +15,7 @@ group = optparse.OptionGroup(parser, 'Jpeg f5 steganography encoder and decoder'
 group.add_option('-t', '--type',     type='string', default='e',help='e for encode or x for decode')
 group.add_option('-i', '--image',    type='string', default='origin.jpg' ,help='input image')
 group.add_option('-d', '--data',     type='string', default='secret.txt', help='data to be embeded, only for encode')
-group.add_option('-o', '--output',   type='string', default='steg.jpg'  ,help='output image name, only for encode')
+group.add_option('-o', '--output',   type='string', default='s.jpg'  ,help='output image name, only for encode')
 group.add_option('-p', '--password', type='string', default='abc123',
         help='password')
 group.add_option('-c', '--comment',  type='string', default='written by czl',

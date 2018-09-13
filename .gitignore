@@ -1,6 +1,7 @@
 *.pyc
 *.swp
 *.jpg
+*.bmp
 *.txt
 *.json
 *.tif

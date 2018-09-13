@@ -58,7 +58,7 @@ class JpegExtract(object):
         hd = HuffmanDecode(data)
         logger.info('huffman decoding starts')
         coeff = hd.decode()
-        coef_buf=coeff[:]
+        #coef_buf=coeff[:]
         
         with open('excoef.json','w') as f:
             json.dump(coeff,f)
@@ -117,7 +117,7 @@ class JpegExtract(object):
                 pass
         else:
             logger.info('default code used')
-            while self.pos < len(coeff):
+            while self.pos < len(coeff)-1:                          #fixing bug
                 self.pos += 1
                 shuffled_index = permutation.get_shuffled(self.pos)
                 if shuffled_index % 64 == 0:

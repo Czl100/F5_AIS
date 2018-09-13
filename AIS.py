@@ -72,7 +72,8 @@ class Ais(object):
         for i in range(len(self.ac_buf)):
             index=self.ac_buf[i][0]
             value=self.ac_buf[i][1]
-            self.coef[index]=value
+            self.coef[index]=value        
+        return self.k_matrix
 
     def _modifone(self,randindex):
         le=len(randindex)
@@ -136,51 +137,81 @@ class Ais(object):
         #expression:ax+by=c
         r=self.r
         a1,b1,c1=0.5*(1-r)*H1,(2*r-2+r)*H1,r*H3-(2*r-1)*H2-(1-r)*H1            #H(1)'>H(2)'  > 
-        a2,b2,c2=0.5*(3*r-1)*H0-H0,-((3*r-1)*H1+r*H1),r*H2-H0-H1*(3*r-1)        # >
+        a2,b2,c2=0.5*(3*r-1)*H0-H0,-((3*r-1)*H1+r*H1),r*H2-H0-H1*(3*r-1)       # >
         a3,b3,c3=(r-1)*H0,-2*r*H1,self.T*H0-H0-2*r*H1                          # <
         a4,b4,c4=1.5*H0,-H1,H0-H1           #ax+by<c
         a5,b5,c5=-0.5*H0,2*H1,H1-H2         #ax+by<c
+        a6,b6,c6=(1-r)*H0,2*r*H1,2*r*H1
         print 'T_C:%d' % c3
 
         
         #解一元二次方程
         px=sympy.Symbol('px')                         #x:pa  y:pb
         py=sympy.Symbol('py')
-        #expre1_5=[a1*x+b1*y-c1,a5*x+b5*y-c5]      #公式(1)与(5)
+        #expre1_5=[a1*x+b1*y-c1,a5*x+b5*y-c5]         #公式(1)与(5)
         #dst1_5=sympy.solve(expre1_5,[x,y])
         expre3_5=[a3*px+b3*py-c3,a5*px+b5*py-c5]      #公式(3)与(5)        
         dst3_5=sympy.solve(expre3_5,[px,py])  
 
         point_ry=float(dst3_5[py])
         point_rx=(c4-b4*point_ry)/a4
-        point_rx=0.5*(point_rx+float(dst3_5[px]))
-        
-        self.pa,self.pb=point_rx,point_ry
-        print "\n(%.3f,%.3f)\n" % (point_rx,point_ry)
+        point_rx=0.5*(point_rx+float(dst3_5[px]))                        
 
         #画出满足约束条件的区域
-        x=[(i/10.0) for i in range(-5,15)]
+        x=[(i/20.0) for i in range(0,11)]
         y1=[(c1-a1*i)/b1 for i in x]
         y2=[(c2-a2*i)/b2 for i in x]
         y3=[(c3-a3*i)/b3 for i in x]
-        y4=[(c4-a4*i)/b4 for i in x]                #1.5aH(0)-bH(1)<H(0)-H(1)
         y5=[(c5-a5*i)/b5 for i in x]                #2bH(1)-0.5aH(0)<H(1)-H(2)
-                
+        y4=[(c4-a4*i)/b4 for i in x]                #1.5aH(0)-bH(1)<H(0)-H(1)
+        y6=[(c6-a6*i)/b6 for i in x]                #h(0)<H(0),aised_embeded后0的个数>原始载体0的个数
+
+        mark_y3,mark_y6,mark_y4=0.2,0.2,0.2
+        mark_x1,mark_y5=0.1,0.7
+        mark_y1=(c1-a1*mark_x1)/b1
+        mark_x5=(c5-b5*mark_y5)/a5                
+        mark_x3=(c3-b3*mark_y3)/a3
+        mark_x4=(c4-b4*mark_y4)/a4
+        mark_x6=(c6-b6*mark_y6)/a6
+        
+        #确定pa\pb
+        point_y3,point_y6=0.1,0.1
+        point_x3=(c3-b3*point_y3)/a3
+        point_x6=(c6-b6*point_y6)/a6
+        self.pa, self.pb=point_x3+0.25*(point_x6-point_x3),point_y3
+        print "\n(%.3f,%.3f)\n" % (self.pa,self.pb)
+
         plt.rcParams['font.sans-serif']=['SimHei']
         plt.rcParams['axes.unicode_minus'] = False
-        plt.plot(x,y1,'-mx',label="H(2)<H(1)")
+        #plt.plot(x,y1,'-m',label="(1):H(2)<H(1)")           #x s o * ^        
         # plt.plot(x,y2,'-yd',label="H(1)<H(0)")
-        plt.plot(x,y3,'-ko',label="H(0)<(1+T)h(0)")
-        plt.plot(x,y4,'-rs',label="h'(1)<h'(0)")
-        plt.plot(x,y5,'-b^',label="h'(2)<h'(1)")        
+        
+        plt.plot(x,y4,'-k^',linewidth=2,label="h'(1)<h'(0)")
+        plt.plot(x,y5,'-ks',linewidth=2,label="h'(2)<h'(1)")
+        plt.plot(x,y6,'-ko',linewidth=2,label="h(0)<H(0)")
+        plt.plot(x,y3,'-k*',linewidth=2,label="H(0)<(1+T)h(0)")
+                
+        #特殊点标记
+        '''
+        plt.plot(self.pa,self.pb,'-b*')
+        plt.text(self.pa,self.pb,'(%.3f,%.3f)' % (self.pa,self.pb),ha='left', va='bottom', fontsize=10)
+                
+        plt.text(mark_x1,mark_y1,'(1)', ha='left', va='bottom', fontsize=10)
+        plt.text(mark_x6+0.01,mark_y6,'c', ha='left', va='bottom', fontsize=18)
+        plt.text(mark_x3-0.01,mark_y3,'d', ha='right', va='bottom', fontsize=18)        
+        plt.text(mark_x4+0.01,mark_y4,'a', ha='left', va='bottom', fontsize=18)
+        plt.text(mark_x5+0.01,mark_y5,'b', ha='left', va='bottom', fontsize=18)
+        '''
 
-        plt.plot(point_rx,point_ry,'-bo')
-        plt.text(dst3_5[px],dst3_5[py],'(%.3f,%.3f)' % (dst3_5[px],dst3_5[py]),ha='left', va='bottom', fontsize=10)
-        plt.text(point_rx,point_ry,'(%.3f,%.3f)' % (point_rx,point_ry),ha='left', va='bottom', fontsize=10)
-        plt.text(point_rx-0.1,point_ry-0.1,u'初始化抗体集',ha='left', va='bottom', fontsize=10)
+        #plt.annotate('A',xy=(mark_x3, marK_y3,xytext=(mark_x3, marK_y3), arrowprops=dict(arrowstyle="->",connectionstyle="arc3"))
+        #plt.text(dst3_5[px],dst3_5[py],'(%.3f,%.3f)' % (dst3_5[px],dst3_5[py]),ha='left', va='bottom', fontsize=10)        
+        #plt.text(point_rx-0.1,point_ry-0.1,u'初始化抗体集',ha='left', va='bottom', fontsize=10)
+        #plt.annotate(u'初始化抗体集',xy=(self.pa,self.pb),xytext=(x[4],y6[4]), arrowprops=dict(arrowstyle="->",connectionstyle="arc3"))
 
         plt.axis([0,1, 0,1])
         plt.xlabel(u'α取值')
-        plt.ylabel(u'β取值')        
-        plt.legend()
-        plt.savefig(u"mandril_color图像约束区域.tif")
+        plt.ylabel(u'β取值')
+        plt.legend(loc=1)
+        plt.savefig(u"图像约束区域.tif",bbox_inches='tight')
+
+        self.pa,self.pb=0.04,0.08    

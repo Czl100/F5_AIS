@@ -103,6 +103,7 @@ class JpegEncoder(object):
         self.huf = Huffman(*image.size)
 
         self.hasais=ais
+        self.k_matrix=-1
 
     def compress(self, embedded_data=None, password='abc123'):
         self.embedded_data = EmbedData(embedded_data) if embedded_data else None
@@ -242,8 +243,8 @@ class JpegEncoder(object):
             size_secret=self.embedded_data.len
             ais=Ais(coeff,size_secret)                                          #coeff被修改
             ais.statistic()
-            ais.fix()                        
-            with open('aised.json','w') as f_aised:        
+            self.k_matrix=ais.fix()
+            with open('aised.json','w') as f_aised:
                 json.dump(coeff,f_aised)
 
         #嵌入——>再统计嵌入后的数据,决定是否继续做AIS处理
@@ -298,9 +299,12 @@ class JpegEncoder(object):
                     break
 
             #确定(1,n,k)
-            k = i - 1               
+            if self.k_matrix<0:
+                k = i - 1
+            else:
+                k=self.k_matrix
             self.n = (1 << k) - 1
-
+            
             if self.n == 0:
                 logger.info('using default code, file will not fit')
                 self.n = 1
